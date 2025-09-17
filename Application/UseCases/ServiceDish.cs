@@ -181,5 +181,26 @@ namespace Application.UseCases
 
         }
 
+        public async Task<DishResponse> GetDishById(Guid id)
+        {
+            var existingDish = await _query.GetDishByIdAsync(id);
+            return existingDish == null ? throw new DishNotFoundException("Plato no encontrado") : new DishResponse
+            {
+                id = existingDish.DishId,
+                name = existingDish.Name,
+                description = existingDish.Description,
+                price = (double)existingDish.Price,
+                Category = new GenericResponse
+                {
+                    id = existingDish.CategoryId,
+                    name = existingDish.Category.Name
+                },
+                image = existingDish.ImageUrl,
+                isActive = existingDish.Available,
+                createdAt = existingDish.CreateDate,
+                updatedAt = existingDish.UpdateDate
+            };
+        }
+
     }
 }
