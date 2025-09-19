@@ -30,6 +30,12 @@ namespace Infrastructure.Commands
             _context.OrderItem.Update(orderItem); 
             await _context.SaveChangesAsync();
         }
+        public async Task AddOrderItem(OrderItem orderItem)
+        {
+            _context.OrderItem.Add(orderItem);
+            await _context.SaveChangesAsync();
+        }
+
 
     }
 }

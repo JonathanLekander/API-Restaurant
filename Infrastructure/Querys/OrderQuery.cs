@@ -48,5 +48,17 @@ namespace Infrastructure.Querys
             return await query.OrderByDescending(o => o.CreateDate).ToListAsync();
         }
 
+        public async Task<Order> GetOrderByIdAsync(long id)
+        {
+            return await _context.Order
+                .Include(o => o.DeliveryType)
+                .Include(o => o.OverallStatus)
+                .Include(o => o.OrderItems)
+                      .ThenInclude(oi => oi.Dish)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Status)
+                .FirstOrDefaultAsync(o => o.OrderId == id);
+        }
+
     }
 }

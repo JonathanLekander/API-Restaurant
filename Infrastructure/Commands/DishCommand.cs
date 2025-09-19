@@ -32,7 +32,7 @@ namespace Infrastructure.Commands
             await _context.SaveChangesAsync();
         }
 
-        /* public async Task DeleteDish(Guid id)
+         public async Task DeleteDish(Guid id)
          {
              var dish = await _context.Dish.FindAsync(id);
              if (dish != null)
@@ -43,7 +43,7 @@ namespace Infrastructure.Commands
                  await _context.SaveChangesAsync();
 
              }
-         }*/
+         }
 
     }
 }

@@ -11,5 +11,6 @@ namespace Application.Interfaces.Command
     {
         Task<long> CreateOrder(Order order);
         Task UpdateOrderItem(OrderItem orderItem);
+        Task AddOrderItem(OrderItem orderItem);
     }
 }

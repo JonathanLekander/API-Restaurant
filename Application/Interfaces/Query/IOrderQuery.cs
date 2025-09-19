@@ -10,6 +10,7 @@ namespace Application.Interfaces.Query
     public interface IOrderQuery
     {
         Task<List<Order>> GetListOrderAsync(DateTime? from, DateTime? to , int? status);
+        Task<Order> GetOrderByIdAsync(long orderId);
 
     }
 }
