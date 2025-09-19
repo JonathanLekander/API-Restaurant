@@ -14,6 +14,7 @@ namespace Application.Interfaces.Service
         Task<DishResponse> CreateDish(DishRequest request);
         Task<DishResponse> UpdateDish(Guid dishId, DishUpdateRequest request);
         Task<List<DishResponse>> GetDishes(string? name, int? category, string sortByPrice, bool? onlyActive);
+        Task <DishResponse> GetDishById(Guid id);
 
     }
 }

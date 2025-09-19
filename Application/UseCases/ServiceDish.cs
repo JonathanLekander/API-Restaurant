@@ -5,11 +5,6 @@ using Application.Interfaces.Command;
 using Application.Interfaces.Query;
 using Application.Interfaces.Service;
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.UseCases
 {
@@ -179,6 +174,43 @@ namespace Application.UseCases
                 updatedAt = updatedDish.UpdateDate
             };
 
+        }
+
+        public async Task<DishResponse> GetDishById(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new InvalidParameterException("Formato de ID inválido");
+            }
+
+            var existingDish = await _query.GetDishByIdAsync(id);
+
+            if (existingDish == null)
+            {
+                throw new DishNotFoundException("Plato no encontrado");
+            }
+
+            if (!existingDish.Available)
+            {
+                throw new AvailableException("El plato no está disponible");
+            }
+
+            return new DishResponse
+            {
+                id = existingDish.DishId,
+                name = existingDish.Name,
+                description = existingDish.Description,
+                price = (double)existingDish.Price,
+                Category = new GenericResponse
+                {
+                    id = existingDish.CategoryId,
+                    name = existingDish.Category.Name
+                },
+                image = existingDish.ImageUrl,
+                isActive = existingDish.Available,
+                createdAt = existingDish.CreateDate,
+                updatedAt = existingDish.UpdateDate
+            };
         }
 
     }

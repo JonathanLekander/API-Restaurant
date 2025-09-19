@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.Request;
 using Application.Exceptions;
 using Application.Interfaces.Service;
+using Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -61,7 +62,33 @@ namespace APIRestaurant.Controllers
                 return StatusCode(500, new { message = "ocurrio un error inesperado.", details = ex.Message });
             }
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetDishesById(string? id)
+        {
+            if (!Guid.TryParse(id, out var guid))
+            {
+                return BadRequest(new { message = "Formato de ID inválido" });
+            }
 
+            try
+            {
+                var result = await _service.GetDishById(guid);
+                return new JsonResult(result) { StatusCode = 200 };
+            }
+
+            catch (DishNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message }); // 404 
+            }
+            catch (AvailableException ex)
+            {
+                return Conflict(new { message = ex.Message }); // 409
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Ocurrió un error inesperado.", details = ex.Message });
+            }
+        }
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateDish(Guid id, DishUpdateRequest request)
         {
