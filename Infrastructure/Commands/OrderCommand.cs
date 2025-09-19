@@ -25,5 +25,11 @@ namespace Infrastructure.Commands
             return order.OrderId;
 
         }
+        public async Task UpdateOrderItem(OrderItem orderItem) 
+        {
+            _context.OrderItem.Update(orderItem); 
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
