@@ -72,7 +72,15 @@ namespace APIRestaurant.Controllers
             }
             catch (InvalidParameterException ex)
             {
-                return BadRequest(new { message = ex.Message }); ;
+                return BadRequest(new { message = ex.Message }); 
+            }
+            catch (DishNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message }); 
+            }
+            catch (AvailableException ex)
+            {
+                return Conflict (new { message = ex.Message });
             }
             catch (Exception ex)
             {

@@ -26,10 +26,19 @@ builder.Services.AddScoped<ICategoryQuery, CategoryQuery>();
 
 //Services 
 builder.Services.AddScoped<IServiceDish, ServiceDish>();
-var app = builder.Build();
 
 //CORS
-app.UseCors("AllowAll");
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

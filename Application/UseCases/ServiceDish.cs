@@ -5,11 +5,6 @@ using Application.Interfaces.Command;
 using Application.Interfaces.Query;
 using Application.Interfaces.Service;
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.UseCases
 {
@@ -183,8 +178,24 @@ namespace Application.UseCases
 
         public async Task<DishResponse> GetDishById(Guid id)
         {
+            if (id == Guid.Empty)
+            {
+                throw new InvalidParameterException("Formato de ID inválido");
+            }
+
             var existingDish = await _query.GetDishByIdAsync(id);
-            return existingDish == null ? throw new DishNotFoundException("Plato no encontrado") : new DishResponse
+
+            if (existingDish == null)
+            {
+                throw new DishNotFoundException("Plato no encontrado");
+            }
+
+            if (!existingDish.Available)
+            {
+                throw new AvailableException("El plato no está disponible");
+            }
+
+            return new DishResponse
             {
                 id = existingDish.DishId,
                 name = existingDish.Name,
