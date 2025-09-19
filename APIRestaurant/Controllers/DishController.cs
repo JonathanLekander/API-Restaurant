@@ -63,28 +63,30 @@ namespace APIRestaurant.Controllers
             }
         }
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetDishesById(Guid id)
+        public async Task<IActionResult> GetDishesById(string? id)
         {
+            if (!Guid.TryParse(id, out var guid))
+            {
+                return BadRequest(new { message = "Formato de ID inválido" });
+            }
+
             try
             {
-                var result = await _service.GetDishById(id);
+                var result = await _service.GetDishById(guid);
                 return new JsonResult(result) { StatusCode = 200 };
             }
-            catch (InvalidParameterException ex)
-            {
-                return BadRequest(new { message = ex.Message }); 
-            }
+
             catch (DishNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message }); 
+                return NotFound(new { message = ex.Message }); // 404 
             }
             catch (AvailableException ex)
             {
-                return Conflict (new { message = ex.Message });
+                return Conflict(new { message = ex.Message }); // 409
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "ocurrio un error inesperado.", details = ex.Message });
+                return StatusCode(500, new { message = "Ocurrió un error inesperado.", details = ex.Message });
             }
         }
         [HttpPut("{id}")]
