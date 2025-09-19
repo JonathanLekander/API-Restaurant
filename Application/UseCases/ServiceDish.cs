@@ -178,11 +178,6 @@ namespace Application.UseCases
 
         public async Task<DishResponse> GetDishById(Guid id)
         {
-            if (id == Guid.Empty)
-            {
-                throw new InvalidParameterException("Formato de ID inválido");
-            }
-
             var existingDish = await _query.GetDishByIdAsync(id);
 
             if (existingDish == null)
