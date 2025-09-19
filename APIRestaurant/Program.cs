@@ -23,6 +23,8 @@ builder.Services.AddDbContext<RestaurantDbContext>(options => options.UseSqlServ
 builder.Services.AddScoped<IDishQuery, DishQuery>();
 builder.Services.AddScoped<IDishCommand, DishCommand>();
 builder.Services.AddScoped<ICategoryQuery, CategoryQuery>();
+builder.Services.AddScoped<IStatusQuery, StatusQuery>();
+builder.Services.AddScoped<IDeliveryTypeQuery, DeliveryTypeQuery>();
 
 //Services 
 builder.Services.AddScoped<IServiceDish, ServiceDish>();

@@ -11,6 +11,8 @@ namespace Application.Interfaces.Command
     {
         Task CreateDish(Dish dish);
         Task UpdateDish(Dish dish);
+        // Task DeleteDish(Guid id);
+
 
     }
 }

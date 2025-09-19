@@ -22,8 +22,6 @@ namespace Infrastructure.Querys
 
         public async Task<List<Category>> GetListCategoryAsync()
         {
-            var CategoryList = new List<Category>();
-
             return await _context.Category.ToListAsync();
         }
         public async Task<Category> GetCategoryByIdAsync(int id)

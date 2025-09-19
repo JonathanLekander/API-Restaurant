@@ -32,5 +32,18 @@ namespace Infrastructure.Commands
             await _context.SaveChangesAsync();
         }
 
+        /* public async Task DeleteDish(Guid id)
+         {
+             var dish = await _context.Dish.FindAsync(id);
+             if (dish != null)
+             {
+                 dish.Available = false;
+                 dish.UpdateDate = DateTime.UtcNow;
+                 _context.Dish.Update(dish);
+                 await _context.SaveChangesAsync();
+
+             }
+         }*/
+
     }
 }
