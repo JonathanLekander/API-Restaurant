@@ -32,6 +32,7 @@ builder.Services.AddScoped<IOrderCommand, OrderCommand>();
 
 //Services 
 builder.Services.AddScoped<IServiceDish, ServiceDish>();
+builder.Services.AddScoped<IServiceCategory, ServiceCategory>();
 
 //CORS
 builder.Services.AddCors(options =>
