@@ -21,7 +21,7 @@ namespace Application.UseCases
             var categories = await _categoryQuery.GetListCategoryAsync();
             var sortedCategories = categories.OrderBy(c => c.Order).ToList();
 
-            return categories.Select(c => new CategoryResponse
+            return sortedCategories.Select(c => new CategoryResponse
             {
                 id = c.Id,
                 name = c.Name,
