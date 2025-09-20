@@ -11,6 +11,6 @@ namespace Application.Interfaces.Query
     {
         Task<List<Order>> GetListOrderAsync(DateTime? from, DateTime? to , int? status);
         Task<Order> GetOrderByIdAsync(long orderId);
-
+        Task<List<Order>> GetOrdersWithDishAsync(Guid dishId);
     }
 }

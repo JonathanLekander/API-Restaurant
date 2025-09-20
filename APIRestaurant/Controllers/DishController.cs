@@ -114,6 +114,26 @@ namespace APIRestaurant.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteDish(Guid id)
+        {
+            try
+            {
+                var result = await _service.DeleteDish(id);
+                return new JsonResult(result) { StatusCode = 200 };
+            }
+            catch (DishNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (AvailableException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Ocurrió un error inesperado.", details = ex.Message });
+            }
+        }
     }
 }

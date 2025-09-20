@@ -59,6 +59,14 @@ namespace Infrastructure.Querys
                     .ThenInclude(oi => oi.Status)
                 .FirstOrDefaultAsync(o => o.OrderId == id);
         }
+        public async Task<List<Order>> GetOrdersWithDishAsync(Guid dishId)
+        {
+            return await _context.Order
+                .Include(o => o.OverallStatus)
+                .Where(o => o.OrderItems.Any(oi => oi.DishId == dishId))
+                .ToListAsync();
+
+        }
 
     }
 }

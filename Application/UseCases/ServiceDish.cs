@@ -13,12 +13,14 @@ namespace Application.UseCases
         private readonly IDishCommand _command;
         private readonly IDishQuery _query;
         private readonly ICategoryQuery _categoryQuery;
+        private readonly IOrderQuery _orderQuery;
 
-        public ServiceDish(IDishCommand command, IDishQuery query, ICategoryQuery categoryQuery)
+        public ServiceDish(IDishCommand command, IDishQuery query, ICategoryQuery categoryQuery, IOrderQuery orderQuery)
         {
             _command = command;
             _query = query;
             _categoryQuery = categoryQuery;
+            _orderQuery = orderQuery;
         }
         public async Task<DishResponse> CreateDish(DishRequest request)
         {
@@ -190,6 +192,50 @@ namespace Application.UseCases
                 throw new AvailableException("El plato no está disponible");
             }
 
+            return new DishResponse
+            {
+                id = existingDish.DishId,
+                name = existingDish.Name,
+                description = existingDish.Description,
+                price = (double)existingDish.Price,
+                Category = new GenericResponse
+                {
+                    id = existingDish.CategoryId,
+                    name = existingDish.Category.Name
+                },
+                image = existingDish.ImageUrl,
+                isActive = existingDish.Available,
+                createdAt = existingDish.CreateDate,
+                updatedAt = existingDish.UpdateDate
+            };
+
+        }
+
+        public async Task<DishResponse> DeleteDish(Guid id)
+        {
+            var existingDish = await _query.GetDishByIdAsync(id);
+            if (existingDish == null)
+            {
+                throw new DishNotFoundException("Plato no encontrado");
+            }
+
+            var ordersWithDish = await _orderQuery.GetOrdersWithDishAsync(id);
+
+            foreach(var order in ordersWithDish)
+            {
+                foreach (var item in order.OrderItems)
+                {
+                    if (item.DishId == id && item.Status.Name != "Cancelled" && item.Status.Name != "Delivered")
+                    {
+                        throw new DishInUseException("No se puede eliminar el plato porque está incluido en órdenes activas");
+                    }
+                }
+            }
+
+            existingDish.Available = false;
+            existingDish.UpdateDate = DateTime.UtcNow;
+
+            await _command.UpdateDish(existingDish);
             return new DishResponse
             {
                 id = existingDish.DishId,
