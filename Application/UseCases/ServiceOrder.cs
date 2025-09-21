@@ -66,5 +66,52 @@ namespace Application.UseCases
                 updatedAt = o.UpdateDate
             }).ToList();
         }
+        public async Task<OrderDetailsResponse> GetOrderById(long orderId)
+        {
+            var order = await _orderQuery.GetOrderByIdAsync(orderId);
+
+            if (order == null)
+            {
+                throw new NotFoundException("Orden no encontrada");
+            }
+
+            return new OrderDetailsResponse
+            {
+                orderNumber = (int)order.OrderId,
+                totalAmount = (double)order.Price,
+                deliveryTo = order.DeliveryTo,
+                notes = order.Notes,
+                status = new GenericResponse
+                {
+                    id = order.OverallStatus.Id,
+                    name = order.OverallStatus.Name
+                },
+                deliveryType = new GenericResponse
+                {
+                    id = order.DeliveryType.Id,
+                    name = order.DeliveryType.Name
+                },
+                items = order.OrderItems.Select(oi => new OrderItemResponse
+                {
+                    id = (int)oi.OrderItemId,
+                    quantity = oi.Quantity,
+                    notes = oi.Notes,
+                    status = new GenericResponse
+                    {
+                        id = oi.Status.Id,
+                        name = oi.Status.Name
+                    },
+                    dish = new DishShortResponse
+                    {
+                        id = oi.Dish.DishId,
+                        name = oi.Dish.Name,
+                        image = oi.Dish.ImageUrl
+                    }
+                }).ToList(),
+                createdAt = order.CreateDate,
+                updatedAt = order.UpdateDate
+            };
+        }
+
     }
 }

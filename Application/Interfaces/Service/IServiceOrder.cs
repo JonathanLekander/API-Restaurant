@@ -10,5 +10,7 @@ namespace Application.Interfaces.Service
     public interface IServiceOrder
     {
         Task<List<OrderDetailsResponse>> GetOrders(DateTime? from, DateTime? to, int? status);
+        Task<OrderDetailsResponse> GetOrderById(long orderId);
+
     }
 }

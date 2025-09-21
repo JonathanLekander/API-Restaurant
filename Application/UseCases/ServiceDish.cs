@@ -126,7 +126,7 @@ namespace Application.UseCases
             var existingDish = await _query.GetDishByIdAsync(id);
             if (existingDish == null)
             {
-                throw new DishNotFoundException("Plato no encontrado");
+                throw new NotFoundException("Plato no encontrado");
             }
 
             if (existingDish.Name != request.name)
@@ -184,7 +184,7 @@ namespace Application.UseCases
 
             if (existingDish == null)
             {
-                throw new DishNotFoundException("Plato no encontrado");
+                throw new NotFoundException("Plato no encontrado");
             }
 
             if (!existingDish.Available)
@@ -216,7 +216,7 @@ namespace Application.UseCases
             var existingDish = await _query.GetDishByIdAsync(id);
             if (existingDish == null)
             {
-                throw new DishNotFoundException("Plato no encontrado");
+                throw new NotFoundException("Plato no encontrado");
             }
 
             var ordersWithDish = await _orderQuery.GetOrdersWithDishAsync(id);

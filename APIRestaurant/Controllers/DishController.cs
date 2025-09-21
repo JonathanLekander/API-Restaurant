@@ -76,7 +76,7 @@ namespace APIRestaurant.Controllers
                 return new JsonResult(result) { StatusCode = 200 };
             }
 
-            catch (DishNotFoundException ex)
+            catch (NotFoundException ex)
             {
                 return NotFound(new { message = ex.Message }); // 404 
             }
@@ -105,7 +105,7 @@ namespace APIRestaurant.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
-            catch (DishNotFoundException ex)
+            catch (NotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
@@ -122,7 +122,7 @@ namespace APIRestaurant.Controllers
                 var result = await _service.DeleteDish(id);
                 return new JsonResult(result) { StatusCode = 200 };
             }
-            catch (DishNotFoundException ex)
+            catch (NotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
