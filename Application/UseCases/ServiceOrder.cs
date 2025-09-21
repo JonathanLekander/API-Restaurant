@@ -1,5 +1,7 @@
-﻿using Application.DTOs.Response;
+﻿using Application.DTOs.Request;
+using Application.DTOs.Response;
 using Application.Exceptions;
+using Application.Interfaces.Command;
 using Application.Interfaces.Query;
 using Application.Interfaces.Service;
 using Domain.Entities;
@@ -14,11 +16,94 @@ namespace Application.UseCases
     public class ServiceOrder : IServiceOrder
     {
         private readonly IOrderQuery _orderQuery;
-        public ServiceOrder(IOrderQuery orderQuery)
+        private readonly IDishQuery _dishQuery;
+        private readonly IOrderCommand _orderCommand;
+        private readonly IDeliveryTypeQuery _deliveryTypeQuery;
+        public ServiceOrder(IOrderQuery orderQuery,IDishQuery dishQuery, IOrderCommand orderCommand, IDeliveryTypeQuery deliveryTypeQuery)
         {
             _orderQuery = orderQuery;
+            _dishQuery = dishQuery;
+            _orderCommand = orderCommand;
+            _deliveryTypeQuery = deliveryTypeQuery;
         }
 
+        public async Task<OrderCreateReponse> CreateOrder (OrderRequest request)
+        {
+            if (request.delivery == null ) 
+            {
+                throw new InvalidParameterException("Debe especificar un tipo de entrega válido");
+            }
+
+            foreach (var item in request.items)
+            {
+                if (!Guid.TryParse(item.id, out var dishId))
+                {
+                    throw new InvalidParameterException("Es obligatorio el ID del plato");
+                }
+                var dish = await _dishQuery.GetDishByIdAsync(dishId);
+
+                if (dish ==null || !dish.Available)
+                {
+                    throw new NotFoundException("El plato especificado no existe o no está disponible");
+                }
+
+            }
+            foreach (var item in request.items)
+            {
+                if (item.quantity <= 0)
+                {
+                    throw new InvalidParameterException("La cantidad debe ser mayor a 0");
+                }
+
+            }
+
+            decimal totalAmount = 0;
+            var orderItems = new List<OrderItem>();
+
+            foreach(var item in request.items)
+            {
+                var dish = await _dishQuery.GetDishByIdAsync(Guid.Parse(item.id));
+                decimal itemPrice = dish.Price * item.quantity;
+                totalAmount += itemPrice;
+
+                var orderItem = new OrderItem
+                {
+                    DishId = dish.DishId,
+                    Quantity = item.quantity,
+                    Notes = item.notes,
+                    StatusId = 1, // "Pending"
+                    CreateDate = DateTime.UtcNow,
+                };
+
+                orderItems.Add(orderItem);
+
+            }
+
+            var order = new Order
+            {
+                DeliveryTo = request.delivery.to,
+                Notes = request.notes,
+                Price = totalAmount,
+                DeliveryTypeId = request.delivery.id,
+                OverallStatusId = 1, 
+                CreateDate = DateTime.UtcNow,
+                UpdateDate = DateTime.UtcNow,
+                OrderItems = orderItems
+
+            };
+
+            var orderId = await _orderCommand.CreateOrder(order);
+
+            return new OrderCreateReponse
+            {
+                orderNumber = (int)orderId,
+                totalAmount = (double)totalAmount,
+                createdAt = order.CreateDate
+            };
+
+
+
+        }
         public async Task<List<OrderDetailsResponse>> GetOrders(DateTime? from, DateTime? to, int? status)
         {
             if (from.HasValue && to.HasValue && from > to)

@@ -1,4 +1,5 @@
-﻿using Application.Exceptions;
+﻿using Application.DTOs.Request;
+using Application.Exceptions;
 using Application.Interfaces.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -15,6 +16,25 @@ namespace APIRestaurant.Controllers
         public OrderController(IServiceOrder serviceOrder)
         {
             _serviceOrder = serviceOrder;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateOrder(OrderRequest request)
+        {
+            try
+            {
+                var result = await _serviceOrder.CreateOrder(request);
+                return new JsonResult(result) { StatusCode = 201 };
+            }
+
+            catch (InvalidParameterException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "ocurrio un error inesperado.", details = ex.Message });
+            }
         }
 
         [HttpGet]
