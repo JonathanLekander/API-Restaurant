@@ -112,8 +112,9 @@ namespace Application.UseCases
             {
                 throw new NotFoundException("Orden no encontrada");
             }
+            // 4 = Delivered, 5 = Closed
 
-            if (activeOrder.OverallStatus.Name == "Closed" || activeOrder.OverallStatus.Name == "Delivered")
+            if (activeOrder.OverallStatusId == 4 || activeOrder.OverallStatusId == 5)
             {
                 throw new InvalidParameterException("No se puede modificar una orden cerrada o entregada");
             }
@@ -169,6 +170,10 @@ namespace Application.UseCases
                     await _orderCommand.AddOrderItem(newOrderItem);
                 }
             }
+            activeOrder.Price = totalAmount;
+            activeOrder.UpdateDate = DateTime.UtcNow;
+            await _orderCommand.UpdateOrder(activeOrder);
+
 
             return new OrderUpdateReponse
             {

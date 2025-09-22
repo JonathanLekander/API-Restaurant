@@ -36,6 +36,12 @@ namespace Infrastructure.Commands
             await _context.SaveChangesAsync();
         }
 
+        public async Task UpdateOrder(Order order)
+        {
+            _context.Order.Update(order);
+            await _context.SaveChangesAsync();
+        }
+
 
     }
 }
