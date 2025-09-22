@@ -43,6 +43,7 @@ namespace Application.UseCases
                 }
 
                 Guid dishId;
+
                 try
                 {
                     dishId = Guid.Parse(item.id);
@@ -279,6 +280,39 @@ namespace Application.UseCases
                 }).ToList(),
                 createdAt = order.CreateDate,
                 updatedAt = order.UpdateDate
+            };
+        }
+
+        public async Task <OrderUpdateReponse> UpdateOrderItem(long orderId, long itemId, OrderItemUpdateRequest request)
+        {
+            var order = await _orderQuery.GetOrderByIdAsync(orderId);
+            if (order == null)
+            {
+                throw new NotFoundException("Orden no encontrada");
+            }
+            var orderItem = order.OrderItems.FirstOrDefault(oi => oi.OrderItemId == itemId);
+            if (orderItem == null)
+            {
+                throw new NotFoundException("Item no encontrado en la orden");
+            }
+            // 4 = Delivered, 5 = Closed
+            if (orderItem.StatusId == 4 || orderItem.StatusId == 5)
+            {
+                throw new InvalidParameterException("El estado especificado no es válido");
+            }
+
+
+            await _orderCommand.UpdateOrderItem(orderItem);
+          
+            orderItem.StatusId = request.status;
+            order.UpdateDate = DateTime.UtcNow;
+            await _orderCommand.UpdateOrder(order);
+
+            return new OrderUpdateReponse
+            {
+                orderNumber = (int)order.OrderId,
+                totalAmount = (double)order.Price,
+                updatedAt = DateTime.UtcNow
             };
         }
 

@@ -14,6 +14,7 @@ namespace Application.Interfaces.Service
         Task<OrderDetailsResponse> GetOrderById(long orderId);
         Task<OrderCreateReponse> CreateOrder(OrderRequest request);
         Task<OrderUpdateReponse> UpdateOrder(OrderUpdateRequest request);
+        Task<OrderUpdateReponse> UpdateOrderItem(long orderId,long itemId,OrderItemUpdateRequest request);
 
     }
 }
