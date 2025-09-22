@@ -63,6 +63,7 @@ namespace Infrastructure.Querys
         {
             return await _context.Order
                 .Include(o => o.OverallStatus)
+                .Include(o => o.OrderItems)
                 .Where(o => o.OrderItems.Any(oi => oi.DishId == dishId))
                 .ToListAsync();
 

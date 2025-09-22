@@ -223,14 +223,19 @@ namespace Application.UseCases
 
             foreach(var order in ordersWithDish)
             {
-                foreach (var item in order.OrderItems)
+                if (order.OrderItems != null)
                 {
-                    if (item.DishId == id && item.Status.Name != "Cancelled" && item.Status.Name != "Delivered")
+                    foreach (var item in order.OrderItems)
+                {
+                    // 5 = Cancelled, 4 = Delivered
+                    if (item.DishId == id && item.StatusId != 4 && item.StatusId != 5)
                     {
                         throw new DishInUseException("No se puede eliminar el plato porque está incluido en órdenes activas");
                     }
                 }
+                    
             }
+             }
 
             existingDish.Available = false;
             existingDish.UpdateDate = DateTime.UtcNow;

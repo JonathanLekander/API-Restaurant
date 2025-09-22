@@ -126,6 +126,10 @@ namespace APIRestaurant.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
+            catch (DishInUseException ex)  
+            {
+                return Conflict(new { message = ex.Message });
+            }
             catch (AvailableException ex)
             {
                 return Conflict(new { message = ex.Message });
