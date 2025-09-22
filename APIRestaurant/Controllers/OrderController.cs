@@ -31,6 +31,10 @@ namespace APIRestaurant.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "ocurrio un error inesperado.", details = ex.Message });
@@ -44,6 +48,10 @@ namespace APIRestaurant.Controllers
             {
                 var result = await _serviceOrder.GetOrders(from, to, status);
                 return new JsonResult(result) { StatusCode = 200 };
+            }
+            catch (InvalidParameterException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {

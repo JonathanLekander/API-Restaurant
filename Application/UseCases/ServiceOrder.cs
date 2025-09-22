@@ -29,25 +29,12 @@ namespace Application.UseCases
 
         public async Task<OrderCreateReponse> CreateOrder (OrderRequest request)
         {
-            if (request.delivery == null ) 
+            var deliveryTypes = await _deliveryTypeQuery.GetListDeliveryTypeAsync();
+            if (!deliveryTypes.Any(dt => dt.Id == request.delivery.id))
             {
                 throw new InvalidParameterException("Debe especificar un tipo de entrega válido");
             }
 
-            foreach (var item in request.items)
-            {
-                if (!Guid.TryParse(item.id, out var dishId))
-                {
-                    throw new InvalidParameterException("Es obligatorio el ID del plato");
-                }
-                var dish = await _dishQuery.GetDishByIdAsync(dishId);
-
-                if (dish ==null || !dish.Available)
-                {
-                    throw new NotFoundException("El plato especificado no existe o no está disponible");
-                }
-
-            }
             foreach (var item in request.items)
             {
                 if (item.quantity <= 0)
@@ -55,6 +42,22 @@ namespace Application.UseCases
                     throw new InvalidParameterException("La cantidad debe ser mayor a 0");
                 }
 
+                Guid dishId;
+                try
+                {
+                    dishId = Guid.Parse(item.id);
+                }
+                catch
+                {
+                    throw new InvalidParameterException("Formato de ID inválido");
+                }
+
+                var dish = await _dishQuery.GetDishByIdAsync(dishId);
+
+                if (!dish.Available)
+                {
+                    throw new InvalidParameterException("El plato especificado no existe o no está disponible");
+                }
             }
 
             decimal totalAmount = 0;
@@ -177,7 +180,12 @@ namespace Application.UseCases
         }
         public async Task<List<OrderDetailsResponse>> GetOrders(DateTime? from, DateTime? to, int? status)
         {
-            if (from.HasValue && to.HasValue && from > to)
+            if (status.HasValue && (status.Value < 1 || status.Value > 5))
+            {
+                throw new InvalidParameterException("El status debe estar entre 1 y 5");
+            }
+
+            if (from.HasValue && to.HasValue && from.Value > to.Value)
             {
                 throw new InvalidParameterException("Rango de fechas inválido");
             }

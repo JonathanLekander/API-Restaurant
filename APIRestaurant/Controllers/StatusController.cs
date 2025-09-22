@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.Service;
+﻿using Application.Exceptions;
+using Application.Interfaces.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,10 @@ namespace APIRestaurant.Controllers
             {
                 var result = await _serviceStatus.GetStatuses();
                 return new JsonResult(result) { StatusCode = 200 };
+            }
+            catch (InvalidParameterException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {

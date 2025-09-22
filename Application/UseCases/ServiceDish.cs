@@ -154,7 +154,7 @@ namespace Application.UseCases
             existingDish.CategoryId = request.category;
             existingDish.ImageUrl = request.image;
             existingDish.Available = request.isActive;
-            existingDish.UpdateDate = DateTime.Now;
+            existingDish.UpdateDate = DateTime.UtcNow;
 
             await _command.UpdateDish(existingDish);
             var updatedDish = await _query.GetDishByIdAsync(id);
