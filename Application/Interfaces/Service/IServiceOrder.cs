@@ -13,6 +13,7 @@ namespace Application.Interfaces.Service
         Task<List<OrderDetailsResponse>> GetOrders(DateTime? from, DateTime? to, int? status);
         Task<OrderDetailsResponse> GetOrderById(long orderId);
         Task<OrderCreateReponse> CreateOrder(OrderRequest request);
+        Task<OrderUpdateReponse> UpdateOrder(OrderUpdateRequest request);
 
     }
 }

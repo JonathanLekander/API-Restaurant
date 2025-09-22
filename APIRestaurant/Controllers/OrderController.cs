@@ -38,7 +38,7 @@ namespace APIRestaurant.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetOrders(DateTime? from,DateTime? to,  int? status)
+        public async Task<IActionResult> GetOrders(DateTime? from, DateTime? to, int? status)
         {
             try
             {
@@ -51,17 +51,40 @@ namespace APIRestaurant.Controllers
             }
         }
 
+        [HttpPut]
+        public async Task<IActionResult> UpdateOrder(OrderUpdateRequest request)
+        {
+            try
+            {
+                var result = await _serviceOrder.UpdateOrder(request);
+                return new JsonResult(result) { StatusCode = 200 };
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidParameterException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "ocurrio un error inesperado.", details = ex.Message });
+            }
+        }
+
+
         [HttpGet("{id}")]
-        public async Task <IActionResult> GetOrderById(long id)
+        public async Task<IActionResult> GetOrderById(long id)
         {
             try
             {
                 var order = await _serviceOrder.GetOrderById(id);
                 return new JsonResult(order) { StatusCode = 200 };
             }
-            catch(NotFoundException ex)
+            catch (NotFoundException ex)
             {
-                return NotFound( new { message = ex.Message });
+                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {

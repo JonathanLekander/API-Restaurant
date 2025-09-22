@@ -35,11 +35,11 @@ namespace Infrastructure.Querys
                 query = query.Where(o => o.CreateDate >= from.Value);
             }
 
-            if (to.HasValue) 
+            if (to.HasValue)
             {
                 query = query.Where(o => o.CreateDate <= to.Value);
             }
-              
+
             if (status.HasValue)
             {
                 query = query.Where(o => o.OverallStatusId == status.Value);
@@ -66,6 +66,15 @@ namespace Infrastructure.Querys
                 .Where(o => o.OrderItems.Any(oi => oi.DishId == dishId))
                 .ToListAsync();
 
+        }
+
+        public async Task<Order> GetActiveOrderAsync()
+        {
+            return await _context.Order
+                .Include(o => o.OverallStatus)
+                .Include(o => o.OrderItems)
+                .Where(o => o.OverallStatus.Name == "Pending" || o.OverallStatus.Name == "In progress")
+                .FirstOrDefaultAsync();
         }
 
     }

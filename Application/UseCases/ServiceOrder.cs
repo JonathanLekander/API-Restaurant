@@ -101,7 +101,78 @@ namespace Application.UseCases
                 createdAt = order.CreateDate
             };
 
+        }
+        public async Task<OrderUpdateReponse> UpdateOrder (OrderUpdateRequest request)
+        {
+            var activeOrder = await _orderQuery.GetActiveOrderAsync();
+            if (activeOrder == null)
+            {
+                throw new NotFoundException("Orden no encontrada");
+            }
 
+            if (activeOrder.OverallStatus.Name == "Closed" || activeOrder.OverallStatus.Name == "Delivered")
+            {
+                throw new InvalidParameterException("No se puede modificar una orden cerrada o entregada");
+            }
+
+            foreach (var item in request.items)
+            {
+                if (item.quantity <= 0)
+                {
+                    throw new InvalidParameterException("La cantidad debe ser mayor a 0");
+                }
+
+                if (!Guid.TryParse(item.id, out var dishId))
+                {
+                    throw new InvalidParameterException("El plato especificado no existe");
+                }
+
+                var dish = await _dishQuery.GetDishByIdAsync(dishId);
+                if (dish == null || !dish.Available)
+                {
+                    throw new InvalidParameterException("El plato especificado no existe o no está disponible");
+                }
+            }
+
+            decimal totalAmount = 0;
+            foreach (var item in request.items)
+            {
+                var dish = await _dishQuery.GetDishByIdAsync(Guid.Parse(item.id));
+                decimal itemPrice = dish.Price * item.quantity;
+                totalAmount += itemPrice;
+
+                // Busco si el item ya existe en la orden
+                var existingItem = activeOrder.OrderItems
+                    .FirstOrDefault(oi => oi.DishId == Guid.Parse(item.id));
+
+                if (existingItem != null)
+                {
+                   
+                    existingItem.Quantity = item.quantity;
+                    existingItem.Notes = item.notes;
+                    await _orderCommand.UpdateOrderItem(existingItem);
+                }
+                else
+                {
+                    var newOrderItem = new OrderItem
+                    {
+                        DishId = Guid.Parse(item.id),
+                        Quantity = item.quantity,
+                        Notes = item.notes,
+                        StatusId = 1, // Pending
+                        CreateDate = DateTime.UtcNow,
+                        OrderId = activeOrder.OrderId
+                    };
+                    await _orderCommand.AddOrderItem(newOrderItem);
+                }
+            }
+
+            return new OrderUpdateReponse
+            {
+                orderNumber = (int)activeOrder.OrderId,
+                totalAmount = (double)totalAmount,
+                updatedAt = DateTime.UtcNow
+            };
 
         }
         public async Task<List<OrderDetailsResponse>> GetOrders(DateTime? from, DateTime? to, int? status)
