@@ -8,7 +8,7 @@ namespace Application.DTOs
 {
     public class Items
     {
-        public string id { get; set; }
+        public Guid id { get; set; }
         public int quantity { get; set; }
         public string? notes { get; set; }
     }

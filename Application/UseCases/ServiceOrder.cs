@@ -42,20 +42,9 @@ namespace Application.UseCases
                     throw new InvalidParameterException("La cantidad debe ser mayor a 0");
                 }
 
-                Guid dishId;
+               var dish = await _dishQuery.GetDishByIdAsync(item.id);
 
-                try
-                {
-                    dishId = Guid.Parse(item.id);
-                }
-                catch
-                {
-                    throw new InvalidParameterException("Formato de ID inválido");
-                }
-
-                var dish = await _dishQuery.GetDishByIdAsync(dishId);
-
-                if (!dish.Available)
+                if (dish == null || !dish.Available)
                 {
                     throw new InvalidParameterException("El plato especificado no existe o no está disponible");
                 }
@@ -66,13 +55,13 @@ namespace Application.UseCases
 
             foreach(var item in request.items)
             {
-                var dish = await _dishQuery.GetDishByIdAsync(Guid.Parse(item.id));
+                var dish = await _dishQuery.GetDishByIdAsync(item.id);
                 decimal itemPrice = dish.Price * item.quantity;
                 totalAmount += itemPrice;
 
                 var orderItem = new OrderItem
                 {
-                    DishId = dish.DishId,
+                    DishId = item.id,
                     Quantity = item.quantity,
                     Notes = item.notes,
                     StatusId = 1, // "Pending"
@@ -100,22 +89,22 @@ namespace Application.UseCases
 
             return new OrderCreateReponse
             {
-                orderNumber = (int)orderId,
+                orderNumber = orderId,
                 totalAmount = (double)totalAmount,
                 createdAt = order.CreateDate
             };
 
         }
-        public async Task<OrderUpdateReponse> UpdateOrder (OrderUpdateRequest request)
+        public async Task<OrderUpdateReponse> UpdateOrder (long orderId, OrderUpdateRequest request)
         {
-            var activeOrder = await _orderQuery.GetActiveOrderAsync();
-            if (activeOrder == null)
+            var order = await _orderQuery.GetOrderByIdAsync(orderId);
+            if (order == null)
             {
                 throw new NotFoundException("Orden no encontrada");
             }
             // 4 = Delivered, 5 = Closed
 
-            if (activeOrder.OverallStatusId == 4 || activeOrder.OverallStatusId == 5)
+            if (order.OverallStatusId == 4 || order.OverallStatusId == 5)
             {
                 throw new InvalidParameterException("No se puede modificar una orden cerrada o entregada");
             }
@@ -127,12 +116,7 @@ namespace Application.UseCases
                     throw new InvalidParameterException("La cantidad debe ser mayor a 0");
                 }
 
-                if (!Guid.TryParse(item.id, out var dishId))
-                {
-                    throw new InvalidParameterException("El plato especificado no existe");
-                }
-
-                var dish = await _dishQuery.GetDishByIdAsync(dishId);
+                var dish = await _dishQuery.GetDishByIdAsync(item.id);
                 if (dish == null || !dish.Available)
                 {
                     throw new InvalidParameterException("El plato especificado no existe o no está disponible");
@@ -142,13 +126,13 @@ namespace Application.UseCases
             decimal totalAmount = 0;
             foreach (var item in request.items)
             {
-                var dish = await _dishQuery.GetDishByIdAsync(Guid.Parse(item.id));
+                var dish = await _dishQuery.GetDishByIdAsync(item.id);
                 decimal itemPrice = dish.Price * item.quantity;
                 totalAmount += itemPrice;
 
                 // Busco si el item ya existe en la orden
-                var existingItem = activeOrder.OrderItems
-                    .FirstOrDefault(oi => oi.DishId == Guid.Parse(item.id));
+                var existingItem = order.OrderItems
+                    .FirstOrDefault(oi => oi.DishId == item.id);
 
                 if (existingItem != null)
                 {
@@ -161,26 +145,26 @@ namespace Application.UseCases
                 {
                     var newOrderItem = new OrderItem
                     {
-                        DishId = Guid.Parse(item.id),
+                        DishId = item.id,
                         Quantity = item.quantity,
                         Notes = item.notes,
                         StatusId = 1, // Pending
                         CreateDate = DateTime.UtcNow,
-                        OrderId = activeOrder.OrderId
+                        OrderId = order.OrderId
                     };
                     await _orderCommand.AddOrderItem(newOrderItem);
                 }
             }
-            activeOrder.Price = totalAmount;
-            activeOrder.UpdateDate = DateTime.UtcNow;
-            await _orderCommand.UpdateOrder(activeOrder);
+            order.Price = totalAmount;
+            order.UpdateDate = DateTime.UtcNow;
+            await _orderCommand.UpdateOrder(order);
 
 
             return new OrderUpdateReponse
             {
-                orderNumber = (int)activeOrder.OrderId,
+                orderNumber = (long)order.OrderId,
                 totalAmount = (double)totalAmount,
-                updatedAt = DateTime.UtcNow
+                updateAt = DateTime.UtcNow
             };
 
         }
@@ -200,7 +184,7 @@ namespace Application.UseCases
 
             return orders.Select(o => new OrderDetailsResponse
             {
-                orderNumber = (int)o.OrderId,
+                orderNumber = o.OrderId,
                 totalAmount = (double)o.Price,
                 deliveryTo = o.DeliveryTo,
                 notes = o.Notes,
@@ -216,7 +200,7 @@ namespace Application.UseCases
                 },
                 items = o.OrderItems.Select(oi => new OrderItemResponse
                 {
-                    id = (int)oi.OrderItemId,
+                    id = oi.OrderItemId,
                     quantity = oi.Quantity,
                     notes = oi.Notes,
                     status = new GenericResponse
@@ -247,7 +231,7 @@ namespace Application.UseCases
 
             return new OrderDetailsResponse
             {
-                orderNumber = (int)order.OrderId,
+                orderNumber = order.OrderId,
                 totalAmount = (double)order.Price,
                 deliveryTo = order.DeliveryTo,
                 notes = order.Notes,
@@ -263,7 +247,7 @@ namespace Application.UseCases
                 },
                 items = order.OrderItems.Select(oi => new OrderItemResponse
                 {
-                    id = (int)oi.OrderItemId,
+                    id = oi.OrderItemId,
                     quantity = oi.Quantity,
                     notes = oi.Notes,
                     status = new GenericResponse
@@ -301,18 +285,16 @@ namespace Application.UseCases
                 throw new InvalidParameterException("El estado especificado no es válido");
             }
 
-
-            await _orderCommand.UpdateOrderItem(orderItem);
-          
             orderItem.StatusId = request.status;
             order.UpdateDate = DateTime.UtcNow;
+            await _orderCommand.UpdateOrderItem(orderItem);
             await _orderCommand.UpdateOrder(order);
 
             return new OrderUpdateReponse
             {
-                orderNumber = (int)order.OrderId,
+                orderNumber = order.OrderId,
                 totalAmount = (double)order.Price,
-                updatedAt = DateTime.UtcNow
+                updateAt = DateTime.UtcNow
             };
         }
 

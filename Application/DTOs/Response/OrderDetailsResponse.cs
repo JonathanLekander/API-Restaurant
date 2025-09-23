@@ -8,7 +8,7 @@ namespace Application.DTOs.Response
 {
     public class OrderDetailsResponse
     {
-        public int orderNumber { get; set; }
+        public long orderNumber { get; set; }
         public double totalAmount { get; set; }
         public string? deliveryTo { get; set; }
         public string? notes { get; set; }

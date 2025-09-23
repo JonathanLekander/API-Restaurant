@@ -8,7 +8,7 @@ namespace Application.DTOs.Response
 {
     public class OrderItemResponse
     {
-        public int id { get; set; }
+        public long id { get; set; }
         public int quantity { get; set; }
         public string? notes { get; set; }
         public GenericResponse status { get; set; }

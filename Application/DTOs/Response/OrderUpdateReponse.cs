@@ -8,8 +8,8 @@ namespace Application.DTOs.Response
 {
     public class OrderUpdateReponse
     {
-        public int orderNumber { get; set; }
+        public long orderNumber { get; set; }
         public double totalAmount { get; set; }
-        public DateTime updatedAt { get; set; }
+        public DateTime updateAt { get; set; }
     }
 }

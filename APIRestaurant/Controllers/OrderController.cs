@@ -59,12 +59,12 @@ namespace APIRestaurant.Controllers
             }
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateOrder(OrderUpdateRequest request)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateOrder(long id, OrderUpdateRequest request)
         {
             try
             {
-                var result = await _serviceOrder.UpdateOrder(request);
+                var result = await _serviceOrder.UpdateOrder(id, request);
                 return new JsonResult(result) { StatusCode = 200 };
             }
             catch (NotFoundException ex)

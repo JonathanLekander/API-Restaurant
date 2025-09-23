@@ -8,7 +8,7 @@ namespace Application.DTOs.Response
 {
     public class OrderCreateReponse
     {
-        public int orderNumber { get; set; }
+        public long orderNumber { get; set; }
         public double totalAmount { get; set; }
         public DateTime createdAt { get; set; }
     }
