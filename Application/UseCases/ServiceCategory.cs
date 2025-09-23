@@ -19,15 +19,19 @@ namespace Application.UseCases
         public async Task<List<CategoryResponse>> GetCategories()
         {
             var categories = await _categoryQuery.GetListCategoryAsync();
-            var sortedCategories = categories.OrderBy(c => c.Order).ToList();
+            var categoryResponse = new List<CategoryResponse>();
 
-            return sortedCategories.Select(c => new CategoryResponse
+            foreach (var category in categories)
             {
-                id = c.Id,
-                name = c.Name,
-                description = c.Description,
-                order = c.Order
-            }).ToList();
+                var categoryDto = new CategoryResponse
+                {
+                    id = category.Id,
+                    name = category.Name,
+                    description = category.Description
+                };
+                categoryResponse.Add(categoryDto);
+            }
+            return categoryResponse;
         }
     }
 }

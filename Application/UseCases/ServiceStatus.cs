@@ -21,11 +21,19 @@ namespace Application.UseCases
         {
             var statuses = await _statusQuery.GetListStatusAsync();
 
-            return statuses.Select(s => new GenericResponse
+            var responseStatuses = new List<GenericResponse>();
+
+            foreach (var status in statuses)
             {
-                id = s.Id,
-                name = s.Name
-            }).ToList();
+                var responseStatus = new GenericResponse
+                {
+                    id = status.Id,
+                    name = status.Name,
+                };
+
+                responseStatuses.Add(responseStatus);
+            }
+            return responseStatuses;
 
         }
     }

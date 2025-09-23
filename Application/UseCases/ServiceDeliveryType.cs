@@ -20,12 +20,19 @@ namespace Application.UseCases
         public async Task<List<GenericResponse>> GetDeliveryTypes()
         {
             var deliveryTypes = await _deliveryTypeQuery.GetListDeliveryTypeAsync();
+            var deliveryTypeResponse = new List<GenericResponse>();
 
-            return deliveryTypes.Select(dt => new GenericResponse
+            foreach (var type in deliveryTypes)
             {
-                id = dt.Id,
-                name = dt.Name
-            }).ToList();
+                var deliveryTypeDto = new GenericResponse
+                {
+                    id = type.Id,
+                    name = type.Name
+                };
+                deliveryTypeResponse.Add(deliveryTypeDto);
+            }
+            return deliveryTypeResponse;
+
         }
     }
 }
