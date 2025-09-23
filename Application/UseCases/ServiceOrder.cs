@@ -19,12 +19,14 @@ namespace Application.UseCases
         private readonly IDishQuery _dishQuery;
         private readonly IOrderCommand _orderCommand;
         private readonly IDeliveryTypeQuery _deliveryTypeQuery;
-        public ServiceOrder(IOrderQuery orderQuery,IDishQuery dishQuery, IOrderCommand orderCommand, IDeliveryTypeQuery deliveryTypeQuery)
+        private readonly IPriceCalculator _priceCalculator;
+        public ServiceOrder(IOrderQuery orderQuery,IDishQuery dishQuery, IOrderCommand orderCommand, IDeliveryTypeQuery deliveryTypeQuery, IPriceCalculator priceCalculator)
         {
             _orderQuery = orderQuery;
             _dishQuery = dishQuery;
             _orderCommand = orderCommand;
             _deliveryTypeQuery = deliveryTypeQuery;
+            _priceCalculator = priceCalculator;
         }
 
         public async Task<OrderCreateReponse> CreateOrder (OrderRequest request)
@@ -50,14 +52,13 @@ namespace Application.UseCases
                 }
             }
 
-            decimal totalAmount = 0;
+            decimal totalAmount = await _priceCalculator.CalculateOrderTotalAsync(request.items);
+
             var orderItems = new List<OrderItem>();
 
             foreach(var item in request.items)
             {
                 var dish = await _dishQuery.GetDishByIdAsync(item.id);
-                decimal itemPrice = dish.Price * item.quantity;
-                totalAmount += itemPrice;
 
                 var orderItem = new OrderItem
                 {
@@ -76,7 +77,7 @@ namespace Application.UseCases
             {
                 DeliveryTo = request.delivery.to,
                 Notes = request.notes,
-                Price = totalAmount,
+                Price = totalAmount, //total calculado
                 DeliveryTypeId = request.delivery.id,
                 OverallStatusId = 1, 
                 CreateDate = DateTime.UtcNow,
@@ -123,7 +124,7 @@ namespace Application.UseCases
                 }
             }
 
-            decimal totalAmount = 0;
+            decimal totalAmount = await _priceCalculator.CalculateOrderTotalAsync(request.items);
             foreach (var item in request.items)
             {
                 var dish = await _dishQuery.GetDishByIdAsync(item.id);

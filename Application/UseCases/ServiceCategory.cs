@@ -27,7 +27,8 @@ namespace Application.UseCases
                 {
                     id = category.Id,
                     name = category.Name,
-                    description = category.Description
+                    description = category.Description,
+                    order = category.Order
                 };
                 categoryResponse.Add(categoryDto);
             }
