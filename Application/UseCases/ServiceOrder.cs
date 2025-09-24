@@ -20,13 +20,15 @@ namespace Application.UseCases
         private readonly IOrderCommand _orderCommand;
         private readonly IDeliveryTypeQuery _deliveryTypeQuery;
         private readonly IPriceCalculator _priceCalculator;
-        public ServiceOrder(IOrderQuery orderQuery,IDishQuery dishQuery, IOrderCommand orderCommand, IDeliveryTypeQuery deliveryTypeQuery, IPriceCalculator priceCalculator)
+        private readonly IOverAllStatusCalculator _overAllStatusCalculator;
+        public ServiceOrder(IOrderQuery orderQuery,IDishQuery dishQuery, IOrderCommand orderCommand, IDeliveryTypeQuery deliveryTypeQuery, IPriceCalculator priceCalculator, IOverAllStatusCalculator overAllStatusCalculator)
         {
             _orderQuery = orderQuery;
             _dishQuery = dishQuery;
             _orderCommand = orderCommand;
             _deliveryTypeQuery = deliveryTypeQuery;
             _priceCalculator = priceCalculator;
+            _overAllStatusCalculator = overAllStatusCalculator;
         }
 
         public async Task<OrderCreateReponse> CreateOrder (OrderRequest request)
@@ -88,6 +90,7 @@ namespace Application.UseCases
 
             var orderId = await _orderCommand.CreateOrder(order);
 
+
             return new OrderCreateReponse
             {
                 orderNumber = orderId,
@@ -98,31 +101,26 @@ namespace Application.UseCases
         }
         public async Task<OrderUpdateReponse> UpdateOrder (long orderId, OrderUpdateRequest request)
         {
+           
             var order = await _orderQuery.GetOrderByIdAsync(orderId);
             if (order == null)
-            {
                 throw new NotFoundException("Orden no encontrada");
-            }
-            
-            if (order.OverallStatusId == 4 || order.OverallStatusId == 5) // 4 = Delivered, 5 = Closed
-            {
-                throw new InvalidParameterException("No se puede modificar una orden cerrada o entregada");
-            }
 
+            if (order.OverallStatusId == 4 || order.OverallStatusId == 5) // 4 = Delivery, 5 = Closed
+                throw new InvalidParameterException("No se puede modificar una orden cerrada o entregada");
+
+         
             foreach (var item in request.items)
             {
                 if (item.quantity <= 0)
-                {
                     throw new InvalidParameterException("La cantidad debe ser mayor a 0");
-                }
 
                 var dish = await _dishQuery.GetDishByIdAsync(item.id);
                 if (dish == null || !dish.Available)
-                {
                     throw new InvalidParameterException("El plato especificado no existe o no está disponible");
-                }
             }
-       
+
+          
             foreach (var item in request.items)
             {
                 var existingItem = order.OrderItems.FirstOrDefault(oi => oi.DishId == item.id);
@@ -140,7 +138,7 @@ namespace Application.UseCases
                         DishId = item.id,
                         Quantity = item.quantity,
                         Notes = item.notes,
-                        StatusId = 1, // Pending
+                        StatusId = 1, // Pending 
                         CreateDate = DateTime.UtcNow,
                         OrderId = order.OrderId
                     };
@@ -148,28 +146,28 @@ namespace Application.UseCases
                 }
             }
 
-            var allItems = new List<Items>();
+     
+            order.OrderItems = await _orderQuery.GetOrderItemsByOrderIdAsync(order.OrderId);
 
-            foreach (var oi in order.OrderItems)
-            {
-                var item = new Items
-                {
-                    id = oi.DishId,
-                    quantity = oi.Quantity
-                };
+         
+            order.OverallStatusId = _overAllStatusCalculator.CalculateOverallStatus(order.OrderItems); 
+            order.UpdateDate = DateTime.UtcNow;
 
-                allItems.Add(item);
-            }
+            
+            var allItems = order.OrderItems
+                .Select(oi => new Items { id = oi.DishId, quantity = oi.Quantity })
+                .ToList();
 
             decimal totalAmount = await _priceCalculator.CalculateOrderTotalAsync(allItems);
-
             order.Price = totalAmount;
-            order.UpdateDate = DateTime.UtcNow;
-            await _orderCommand.UpdateOrder(order);
 
+           
+            await _orderCommand.UpdateOrder(order); 
+
+           
             return new OrderUpdateReponse
             {
-                orderNumber = (long)order.OrderId,
+                orderNumber = order.OrderId,
                 totalAmount = (double)totalAmount,
                 updateAt = DateTime.UtcNow
             };

@@ -78,5 +78,14 @@ namespace Infrastructure.Querys
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<List<OrderItem>> GetOrderItemsByOrderIdAsync(long orderId)
+        {
+            return await _context.OrderItem
+                .Include(oi => oi.Dish)
+                .Include(oi => oi.Status)
+                .Where(oi => oi.OrderId == orderId)
+                .ToListAsync();
+        }
+
     }
 }

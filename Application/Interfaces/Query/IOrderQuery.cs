@@ -13,6 +13,8 @@ namespace Application.Interfaces.Query
         Task<Order> GetOrderByIdAsync(long orderId);
         Task<List<Order>> GetOrdersWithDishAsync(Guid dishId);
 
+        Task<List<OrderItem>> GetOrderItemsByOrderIdAsync(long orderId);
         Task<Order> GetActiveOrderAsync();
+        
     }
 }
