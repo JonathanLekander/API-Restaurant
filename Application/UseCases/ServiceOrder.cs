@@ -103,9 +103,8 @@ namespace Application.UseCases
             {
                 throw new NotFoundException("Orden no encontrada");
             }
-            // 4 = Delivered, 5 = Closed
-
-            if (order.OverallStatusId == 4 || order.OverallStatusId == 5)
+            
+            if (order.OverallStatusId == 4 || order.OverallStatusId == 5) // 4 = Delivered, 5 = Closed
             {
                 throw new InvalidParameterException("No se puede modificar una orden cerrada o entregada");
             }
@@ -123,21 +122,13 @@ namespace Application.UseCases
                     throw new InvalidParameterException("El plato especificado no existe o no está disponible");
                 }
             }
-
-            decimal totalAmount = await _priceCalculator.CalculateOrderTotalAsync(request.items);
+       
             foreach (var item in request.items)
             {
-                var dish = await _dishQuery.GetDishByIdAsync(item.id);
-                decimal itemPrice = dish.Price * item.quantity;
-                totalAmount += itemPrice;
-
-                // Busco si el item ya existe en la orden
-                var existingItem = order.OrderItems
-                    .FirstOrDefault(oi => oi.DishId == item.id);
+                var existingItem = order.OrderItems.FirstOrDefault(oi => oi.DishId == item.id);
 
                 if (existingItem != null)
                 {
-                   
                     existingItem.Quantity = item.quantity;
                     existingItem.Notes = item.notes;
                     await _orderCommand.UpdateOrderItem(existingItem);
@@ -156,10 +147,25 @@ namespace Application.UseCases
                     await _orderCommand.AddOrderItem(newOrderItem);
                 }
             }
+
+            var allItems = new List<Items>();
+
+            foreach (var oi in order.OrderItems)
+            {
+                var item = new Items
+                {
+                    id = oi.DishId,
+                    quantity = oi.Quantity
+                };
+
+                allItems.Add(item);
+            }
+
+            decimal totalAmount = await _priceCalculator.CalculateOrderTotalAsync(allItems);
+
             order.Price = totalAmount;
             order.UpdateDate = DateTime.UtcNow;
             await _orderCommand.UpdateOrder(order);
-
 
             return new OrderUpdateReponse
             {
