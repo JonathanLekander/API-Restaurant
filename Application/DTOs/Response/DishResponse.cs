@@ -12,7 +12,7 @@ namespace Application.DTOs.Response
         public string name { get; set; }
         public string? description { get; set; } = null;
         public double price { get; set; }
-        public GenericResponse Category { get; set; }
+        public GenericResponse category { get; set; }
         public string? image { get; set; }
         public bool isActive { get; set; }
         public DateTime createdAt { get; set; }

@@ -69,7 +69,7 @@ namespace Application.UseCases
                 name = dish.Name,
                 description = dish.Description,
                 price = (double)dish.Price,
-                Category = new GenericResponse
+                category = new GenericResponse
                 {
                     id = dish.Category.Id,
                     name = dish.Category.Name
@@ -108,7 +108,7 @@ namespace Application.UseCases
                 name = d.Name,
                 description = d.Description,
                 price = (double)d.Price,
-                Category = new GenericResponse
+                category = new GenericResponse
                 {
                     id = d.CategoryId,
                     name = d.Category?.Name
@@ -165,7 +165,7 @@ namespace Application.UseCases
                 name = updatedDish.Name,
                 description = updatedDish.Description,
                 price = (double)updatedDish.Price,
-                Category = new GenericResponse
+                category = new GenericResponse
                 {
                     id = updatedDish.CategoryId,
                     name = updatedDish.Category.Name
@@ -198,7 +198,7 @@ namespace Application.UseCases
                 name = existingDish.Name,
                 description = existingDish.Description,
                 price = (double)existingDish.Price,
-                Category = new GenericResponse
+                category = new GenericResponse
                 {
                     id = existingDish.CategoryId,
                     name = existingDish.Category.Name
@@ -247,7 +247,7 @@ namespace Application.UseCases
                 name = existingDish.Name,
                 description = existingDish.Description,
                 price = (double)existingDish.Price,
-                Category = new GenericResponse
+                category = new GenericResponse
                 {
                     id = existingDish.CategoryId,
                     name = existingDish.Category.Name
