@@ -183,23 +183,71 @@ namespace Application.UseCases
 
             var orders = await _orderQuery.GetListOrderAsync(from, to, status);
 
-            return orders.Select(o => new OrderDetailsResponse
+            var responseList = new List<OrderDetailsResponse>();
+
+            foreach (var o in orders)
             {
-                orderNumber = o.OrderId,
-                totalAmount = (double)o.Price,
-                deliveryTo = o.DeliveryTo,
-                notes = o.Notes,
-                status = new GenericResponse
+                var response = new OrderDetailsResponse
                 {
-                    id = o.OverallStatus.Id,
-                    name = o.OverallStatus.Name
-                },
-                deliveryType = new GenericResponse
+                    orderNumber = o.OrderId,
+                    totalAmount = (double)o.Price,
+                    deliveryTo = o.DeliveryTo,
+                    notes = o.Notes,
+                    status = new GenericResponse
+                    {
+                        id = o.OverallStatus.Id,
+                        name = o.OverallStatus.Name
+                    },
+                    deliveryType = new GenericResponse
+                    {
+                        id = o.DeliveryType.Id,
+                        name = o.DeliveryType.Name
+                    },
+                    items = new List<OrderItemResponse>(),
+                    createdAt = o.CreateDate,
+                    updatedAt = o.UpdateDate
+                };
+
+                foreach (var oi in o.OrderItems)
                 {
-                    id = o.DeliveryType.Id,
-                    name = o.DeliveryType.Name
-                },
-                items = o.OrderItems.Select(oi => new OrderItemResponse
+                    var itemResponse = new OrderItemResponse
+                    {
+                        id = oi.OrderItemId,
+                        quantity = oi.Quantity,
+                        notes = oi.Notes,
+                        status = new GenericResponse
+                        {
+                            id = oi.Status.Id,
+                            name = oi.Status.Name
+                        },
+                        dish = new DishShortResponse
+                        {
+                            id = oi.Dish.DishId,
+                            name = oi.Dish.Name,
+                            image = oi.Dish.ImageUrl
+                        }
+                    };
+
+                    response.items.Add(itemResponse);
+                }
+
+                responseList.Add(response);
+            }
+            return responseList;
+        }
+        public async Task<OrderDetailsResponse> GetOrderById(long orderId)
+        {
+            var order = await _orderQuery.GetOrderByIdAsync(orderId);
+
+            if (order == null)
+            {
+                throw new NotFoundException("Orden no encontrada");
+            }
+
+            var itemsList = new List<OrderItemResponse>();
+            foreach (var oi in order.OrderItems)
+            {
+                var itemResponse = new OrderItemResponse
                 {
                     id = oi.OrderItemId,
                     quantity = oi.Quantity,
@@ -215,19 +263,9 @@ namespace Application.UseCases
                         name = oi.Dish.Name,
                         image = oi.Dish.ImageUrl
                     }
-                }).ToList(),
+                };
 
-                createdAt = o.CreateDate,
-                updatedAt = o.UpdateDate
-            }).ToList();
-        }
-        public async Task<OrderDetailsResponse> GetOrderById(long orderId)
-        {
-            var order = await _orderQuery.GetOrderByIdAsync(orderId);
-
-            if (order == null)
-            {
-                throw new NotFoundException("Orden no encontrada");
+                itemsList.Add(itemResponse);
             }
 
             return new OrderDetailsResponse
@@ -246,23 +284,7 @@ namespace Application.UseCases
                     id = order.DeliveryType.Id,
                     name = order.DeliveryType.Name
                 },
-                items = order.OrderItems.Select(oi => new OrderItemResponse
-                {
-                    id = oi.OrderItemId,
-                    quantity = oi.Quantity,
-                    notes = oi.Notes,
-                    status = new GenericResponse
-                    {
-                        id = oi.Status.Id,
-                        name = oi.Status.Name
-                    },
-                    dish = new DishShortResponse
-                    {
-                        id = oi.Dish.DishId,
-                        name = oi.Dish.Name,
-                        image = oi.Dish.ImageUrl
-                    }
-                }).ToList(),
+                items = itemsList,
                 createdAt = order.CreateDate,
                 updatedAt = order.UpdateDate
             };
