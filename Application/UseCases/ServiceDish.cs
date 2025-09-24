@@ -219,23 +219,28 @@ namespace Application.UseCases
                 throw new NotFoundException("Plato no encontrado");
             }
 
+            if (!existingDish.Available)
+            {
+                throw new AvailableException("El plato ya está eliminado o inactivo");
+            }
+
             var ordersWithDish = await _orderQuery.GetOrdersWithDishAsync(id);
 
-            foreach(var order in ordersWithDish)
+            foreach (var order in ordersWithDish)
             {
                 if (order.OrderItems != null)
                 {
                     foreach (var item in order.OrderItems)
-                {
-                    // 5 = Cancelled, 4 = Delivered
-                    if (item.DishId == id && item.StatusId != 4 && item.StatusId != 5)
                     {
-                        throw new DishInUseException("No se puede eliminar el plato porque está incluido en órdenes activas");
+                        // 5 = Cancelled, 4 = Delivered
+                        if (item.DishId == id && item.StatusId != 4 && item.StatusId != 5)
+                        {
+                            throw new DishInUseException("No se puede eliminar el plato porque está incluido en órdenes activas");
+                        }
                     }
+
                 }
-                    
             }
-             }
 
             existingDish.Available = false;
             existingDish.UpdateDate = DateTime.UtcNow;
