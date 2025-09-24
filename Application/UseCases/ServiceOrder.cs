@@ -101,7 +101,8 @@ namespace Application.UseCases
         }
         public async Task<OrderUpdateReponse> UpdateOrder (long orderId, OrderUpdateRequest request)
         {
-           
+
+      
             var order = await _orderQuery.GetOrderByIdAsync(orderId);
             if (order == null)
                 throw new NotFoundException("Orden no encontrada");
@@ -109,7 +110,7 @@ namespace Application.UseCases
             if (order.OverallStatusId == 4 || order.OverallStatusId == 5) // 4 = Delivery, 5 = Closed
                 throw new InvalidParameterException("No se puede modificar una orden cerrada o entregada");
 
-         
+            
             foreach (var item in request.items)
             {
                 if (item.quantity <= 0)
@@ -120,7 +121,7 @@ namespace Application.UseCases
                     throw new InvalidParameterException("El plato especificado no existe o no está disponible");
             }
 
-          
+       
             foreach (var item in request.items)
             {
                 var existingItem = order.OrderItems.FirstOrDefault(oi => oi.DishId == item.id);
@@ -138,7 +139,7 @@ namespace Application.UseCases
                         DishId = item.id,
                         Quantity = item.quantity,
                         Notes = item.notes,
-                        StatusId = 1, // Pending 
+                        StatusId = 1, // Pending por defecto
                         CreateDate = DateTime.UtcNow,
                         OrderId = order.OrderId
                     };
@@ -146,14 +147,14 @@ namespace Application.UseCases
                 }
             }
 
-     
+            
             order.OrderItems = await _orderQuery.GetOrderItemsByOrderIdAsync(order.OrderId);
 
-         
-            order.OverallStatusId = _overAllStatusCalculator.CalculateOverallStatus(order.OrderItems); 
+           
+            order.OverallStatusId = _overAllStatusCalculator.CalculateOverallStatus(order.OrderItems);
             order.UpdateDate = DateTime.UtcNow;
 
-            
+         
             var allItems = order.OrderItems
                 .Select(oi => new Items { id = oi.DishId, quantity = oi.Quantity })
                 .ToList();
@@ -161,8 +162,8 @@ namespace Application.UseCases
             decimal totalAmount = await _priceCalculator.CalculateOrderTotalAsync(allItems);
             order.Price = totalAmount;
 
-           
-            await _orderCommand.UpdateOrder(order); 
+        
+            await _orderCommand.UpdateOrder(order);
 
            
             return new OrderUpdateReponse
@@ -301,29 +302,51 @@ namespace Application.UseCases
             {
                 throw new NotFoundException("Orden no encontrada");
             }
+
             var orderItem = order.OrderItems.FirstOrDefault(oi => oi.OrderItemId == itemId);
             if (orderItem == null)
             {
-                throw new NotFoundException("Item no encontrado en la orden");
-            }
-            // 4 = Delivered, 5 = Closed
-            if (orderItem.StatusId == 4 || orderItem.StatusId == 5)
-            {
-                throw new InvalidParameterException("El estado especificado no es válido");
+                throw new NotFoundException("Item de orden no encontrado");
             }
 
+         
             orderItem.StatusId = request.status;
             order.UpdateDate = DateTime.UtcNow;
+
             await _orderCommand.UpdateOrderItem(orderItem);
-            await _orderCommand.UpdateOrder(order);
+
+        
+            await UpdateOrderStatus(orderId);
 
             return new OrderUpdateReponse
             {
-                orderNumber = order.OrderId,
+                orderNumber = orderId,
                 totalAmount = (double)order.Price,
                 updateAt = DateTime.UtcNow
             };
         }
+
+        public async Task UpdateOrderStatus(long orderId)
+        {
+            var order = await _orderQuery.GetOrderByIdAsync(orderId);
+            if (order == null)
+            {
+                throw new NotFoundException("Orden no encontrada");
+            }
+
+            
+            var orderItems = await _orderQuery.GetOrderItemsByOrderIdAsync(order.OrderId);
+
+            
+            var newStatus = _overAllStatusCalculator.CalculateOverallStatus(orderItems);
+
+            // Actualizar solo el status de la orden
+            order.OverallStatusId = newStatus;
+            order.UpdateDate = DateTime.UtcNow;
+
+            await _orderCommand.UpdateOrder(order);
+        }
+
 
     }
 }

@@ -13,26 +13,27 @@ namespace Application.UseCases
         public int CalculateOverallStatus(IEnumerable<OrderItem> items)
         {
             if (items == null || !items.Any())
-                return 1; // Pending por defecto
+                return 1; // Pending
 
-            // 1. Closed tiene prioridad máxima
-            if (items.All(i => i.StatusId == 5))
-                return 5; // Closed
+            // Si algún item está cancelado (5), la orden es cancelada
+            if (items.Any(x => x.StatusId == 5))
+                return 5;
 
-            // 2. Delivery
-            if (items.All(i => i.StatusId == 4 || i.StatusId == 5))
-                return 4; // Delivery
+            // Si todos los items están entregados (4), la orden es entregada
+            if (items.All(x => x.StatusId == 4))
+                return 4;
 
-            // 3. Ready
-            if (items.All(i => i.StatusId == 3 || i.StatusId == 4 || i.StatusId == 5))
-                return 3; // Ready
+            // Si hay algún item listo (3)
+            if (items.Any(x => x.StatusId == 3))
+                return 3;
 
-            // 4. In progress
-            if (items.Any(i => i.StatusId == 2))
-                return 2; // In progress
+            // Si hay algún item en preparación (2)
+            if (items.Any(x => x.StatusId == 2))
+                return 2;
 
-            // 5. Pending por defecto
+            // Por defecto, pendiente (1)
             return 1;
         }
     }
+    
 }
