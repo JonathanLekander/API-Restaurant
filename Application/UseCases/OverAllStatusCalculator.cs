@@ -15,24 +15,10 @@ namespace Application.UseCases
             if (items == null || !items.Any())
                 return 1; // Pending
 
-            // Si algún item está cancelado (5), la orden es cancelada
-            if (items.Any(x => x.StatusId == 5))
-                return 5;
+            // REGLA PRINCIPAL: Tomar el STATUS MÁS BAJO (mínimo) de los items
+            var minStatus = items.Min(x => x.StatusId);
 
-            // Si todos los items están entregados (4), la orden es entregada
-            if (items.All(x => x.StatusId == 4))
-                return 4;
-
-            // Si hay algún item listo (3)
-            if (items.Any(x => x.StatusId == 3))
-                return 3;
-
-            // Si hay algún item en preparación (2)
-            if (items.Any(x => x.StatusId == 2))
-                return 2;
-
-            // Por defecto, pendiente (1)
-            return 1;
+            return minStatus;
         }
     }
     

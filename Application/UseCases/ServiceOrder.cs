@@ -107,8 +107,8 @@ namespace Application.UseCases
             if (order == null)
                 throw new NotFoundException("Orden no encontrada");
 
-            if (order.OverallStatusId == 4 || order.OverallStatusId == 5) // 4 = Delivery, 5 = Closed
-                throw new InvalidParameterException("No se puede modificar una orden cerrada o entregada");
+            if (order.OverallStatusId == 5) // 5 = Closed
+                throw new InvalidParameterException("No se puede modificar una orden cerrada");
 
             
             foreach (var item in request.items)
@@ -178,7 +178,7 @@ namespace Application.UseCases
         {
             if (status.HasValue && (status.Value < 1 || status.Value > 5))
             {
-                throw new InvalidParameterException("El status debe estar entre 1 y 5");
+                throw new InvalidParameterException("El estado especificado no es válido");
             }
 
             if (from.HasValue && to.HasValue && from.Value > to.Value)
@@ -309,7 +309,12 @@ namespace Application.UseCases
                 throw new NotFoundException("Item de orden no encontrado");
             }
 
-         
+            if (request.status < 1 || request.status > 5)
+            {
+                throw new InvalidParameterException("El estado especificado no es válido");
+            }
+
+
             orderItem.StatusId = request.status;
             order.UpdateDate = DateTime.UtcNow;
 
@@ -336,8 +341,6 @@ namespace Application.UseCases
 
             
             var orderItems = await _orderQuery.GetOrderItemsByOrderIdAsync(order.OrderId);
-
-            
             var newStatus = _overAllStatusCalculator.CalculateOverallStatus(orderItems);
 
             // Actualizar solo el status de la orden
