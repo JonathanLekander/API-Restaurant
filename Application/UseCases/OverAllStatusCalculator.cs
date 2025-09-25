@@ -15,7 +15,7 @@ namespace Application.UseCases
             if (items == null || !items.Any())
                 return 1; // Pending
 
-            // REGLA PRINCIPAL: Tomar el STATUS MÁS BAJO (mínimo) de los items
+            // Toma el STATUS MÁS BAJO de los items
             var minStatus = items.Min(x => x.StatusId);
 
             return minStatus;

@@ -139,7 +139,7 @@ namespace Application.UseCases
                         DishId = item.id,
                         Quantity = item.quantity,
                         Notes = item.notes,
-                        StatusId = 1, // Pending por defecto
+                        StatusId = 1, // Pending 
                         CreateDate = DateTime.UtcNow,
                         OrderId = order.OrderId
                     };

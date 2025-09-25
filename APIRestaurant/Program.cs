@@ -36,6 +36,8 @@ builder.Services.AddScoped<IServiceCategory, ServiceCategory>();
 builder.Services.AddScoped<IServiceDeliveryType, ServiceDeliveryType>();
 builder.Services.AddScoped<IServiceStatus, ServiceStatus>();
 builder.Services.AddScoped<IServiceOrder, ServiceOrder>();
+
+//calculators
 builder.Services.AddScoped<IPriceCalculator,PriceCalculator>();
 builder.Services.AddScoped<IOverAllStatusCalculator, OverAllStatusCalculator>();
 

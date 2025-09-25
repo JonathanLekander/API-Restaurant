@@ -232,8 +232,8 @@ namespace Application.UseCases
                 {
                     foreach (var item in order.OrderItems)
                     {
-                        // 5 = Cancelled, 4 = Delivered
-                        if (item.DishId == id && item.StatusId != 4 && item.StatusId != 5)
+                        // 5 = Closed, podria poner 4(entregado) pero si lo pienso en la vida real el cliente podria pedir mas platos dentro de esa orden.
+                        if (item.DishId == id  && item.StatusId != 5)
                         {
                             throw new DishInUseException("No se puede eliminar el plato porque está incluido en órdenes activas");
                         }
