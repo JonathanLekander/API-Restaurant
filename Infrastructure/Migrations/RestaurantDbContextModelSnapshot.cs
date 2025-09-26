@@ -162,7 +162,8 @@ namespace Infrastructure.Migrations
                         .HasColumnType("BIT");
 
                     b.Property<int>("CategoryId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("Category");
 
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime2");
@@ -208,14 +209,16 @@ namespace Infrastructure.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<int>("DeliveryTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("DeliveryType");
 
                     b.Property<string>("Notes")
                         .IsRequired()
                         .HasColumnType("varchar(MAX)");
 
                     b.Property<int>("OverallStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("OverallStatus");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10,2)");
@@ -244,20 +247,23 @@ namespace Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("DishId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("Dish");
 
                     b.Property<string>("Notes")
                         .IsRequired()
                         .HasColumnType("varchar(MAX)");
 
                     b.Property<long>("OrderId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("bigint")
+                        .HasColumnName("Order");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
                     b.Property<int>("StatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("Status");
 
                     b.HasKey("OrderItemId");
 

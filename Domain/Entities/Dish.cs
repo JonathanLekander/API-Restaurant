@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace Domain.Entities
         public DateTime CreateDate { get; set; }
         public DateTime UpdateDate { get; set; }
 
-
+        [Column("Category")] 
         public int CategoryId { get; set; }
         public Category Category { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; }
