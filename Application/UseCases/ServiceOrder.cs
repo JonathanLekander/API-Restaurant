@@ -117,8 +117,13 @@ namespace Application.UseCases
                     throw new InvalidParameterException("La cantidad debe ser mayor a 0");
 
                 var dish = await _dishQuery.GetDishByIdAsync(item.id);
-                if (dish == null || !dish.Available)
+                if (dish == null)
+                    throw new InvalidParameterException("El plato especificado no existe");
+
+                if (!dish.Available)
                     throw new InvalidParameterException("El plato especificado no está disponible");
+
+                
             }
 
        
