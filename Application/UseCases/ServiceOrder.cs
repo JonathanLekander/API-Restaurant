@@ -118,7 +118,7 @@ namespace Application.UseCases
 
                 var dish = await _dishQuery.GetDishByIdAsync(item.id);
                 if (dish == null || !dish.Available)
-                    throw new InvalidParameterException("El plato especificado no existe o no está disponible");
+                    throw new InvalidParameterException("El plato especificado no está disponible");
             }
 
        
